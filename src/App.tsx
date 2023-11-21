@@ -17,34 +17,63 @@ const queryClient = new QueryClient()
 
 function App() {
 
-    const Layout = () =>{
-      return(
-        <div className="main">
-          <Navbar/>
-            <div className="container">
-
-              <div className="menuContainer">
-                <Menu/>
-              </div>
-              <div className="contentContainer">
-              <QueryClientProvider client={queryClient}>
-
-                <Outlet/>
-              </QueryClientProvider>
-              </div>
+const Layout = ({ showMenu }) => {
+    const routes = useRoutes([
+      {
+        path: '/',
+        element: <Home />,
+      },
+      {
+        path: '/dashboard',
+        element: <Dashboard />,
+      },
+      {
+        path: '/users',
+        element: <Users />,
+      },
+      {
+        path: '/products',
+        element: <Products />,
+      },
+      {
+        path: '/users/:id',
+        element: <User />,
+      },
+      {
+        path: '/products/:id',
+        element: <Product />,
+      },
+    ]);
+  
+    // Check if the current route is the home page
+    const isHome = window.location.pathname === '/';
+  
+    return (
+      <div className="main">
+        <Navbar />
+        <div className="container">
+          {/* Conditionally render the Menu based on the route */}
+          {isHome ? null : (
+            <div className="menuContainer">
+              <Menu />
             </div>
-          <Footer />
-
+          )}
+          <div className="contentContainer">
+            <QueryClientProvider client={queryClient}>
+              {routes || <Outlet />} {/* Render the route element or Outlet */}
+            </QueryClientProvider>
+          </div>
         </div>
-      )
-
-
-    }
+        <Footer />
+      </div>
+    );
+  };
+  
 
     const router = createBrowserRouter([
       {
         path: "/",
-        element: <Layout />,
+        element: <Layout showMenu={false} />,
         children: [
           {
             path: "/",
