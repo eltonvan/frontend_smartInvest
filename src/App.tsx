@@ -50,20 +50,22 @@ const Layout = ({ showMenu }) => {
   
     return (
       <div className="main">
+        <QueryClientProvider client={queryClient}>
         <Navbar />
         <div className="container">
-          {/* Conditionally render the Menu based on the route */}
+          {/* render the Menu based on the route */}
           {isHome ? null : (
             <div className="menuContainer">
               <Menu />
             </div>
           )}
           <div className="contentContainer">
-            <QueryClientProvider client={queryClient}>
+            
               {routes || <Outlet />} {/* Render the route element or Outlet */}
-            </QueryClientProvider>
+            
           </div>
         </div>
+        </QueryClientProvider>
         <Footer />
       </div>
     );

@@ -52,6 +52,32 @@
             color:dimgrey
 
         }
+
+        .btnPanel{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+
+            .btn{
+                margin-top: 80px;
+                background-color: $dark-color;
+                color: $soft-color;
+                padding: 50px 80px;
+                border-radius: 10px;
+                font-size: 26px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease-in-out;
+    
+                &:hover{
+                    background-color: $soft-color;
+                    color: $dark-color;
+                    border : 5px solid $dark-color;
+                }
+            }
+        }
     }
 
     .box4{

@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import "./add.scss";
 import { GridColDef } from '@mui/x-data-grid';
-//import { v4 as uuidv4 } from 'uuid';
 
 type Props = {
     slug: string;
