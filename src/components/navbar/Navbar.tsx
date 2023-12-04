@@ -1,16 +1,16 @@
 import "./navbar.scss";
 import { useState } from 'react';
-import UserForm from '../userForm/UserForm';
+import LoginForm from "../loginForm/LoginForm";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; // Import QueryClientProvider
 
 const Navbar = () => {
-  const [showUserForm, setShowUserForm] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
 
-  const openUserForm = () => {
-    setShowUserForm(true);
+  const openLoginForm = () => {
+    setShowLoginForm(true);
   };
 
-  const queryClient = new QueryClient();
+  // const queryClient = new QueryClient();
 
 
   return (
@@ -27,24 +27,21 @@ const Navbar = () => {
           <img src="/notifications.svg" alt="" />
           <span>1</span>
         </div>
-        <div className="user" onClick={openUserForm}>
-          {showUserForm ? (
-            <QueryClientProvider client={queryClient}>
-            <UserForm
-              slug="signup" // Or any appropriate value for slug
-              setOpen={setShowUserForm}
-            />
-            </QueryClientProvider>
-          ) : (
+        {/* <QueryClientProvider client={queryClient}> */}
+        <div className="user" onClick={openLoginForm}>
+          
+            {/* // </QueryClientProvider> */}
+          
             <>
               <img
                 src="https://images.pexels.com/photos/11038549/pexels-photo-11038549.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load"
                 alt=""
               />
-              <span>Sign up/Sign in</span>
+              <span>Sign in</span>
             </>
-          )}
+          
         </div>
+        {showLoginForm && <LoginForm slug="Sign In" setOpen={setShowLoginForm} />}
         <img src="/settings.svg" alt="" className="icon" />
       </div>
     </div>

@@ -2,19 +2,28 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import './userForm.scss';
 
-type Props = {
-  slug: string;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-};
+type UserFormData = {
+    username: string;
+    email: string;
+    password1: string;
+    password2: string;
+  };
 
-const UserForm = (props: Props) => {
-  const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
+  type UserFormProps = {
+    slug: string;
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  };
+
+  const UserForm: React.FC<UserFormProps> = (props) => {
+    const queryClient = useQueryClient();
+    const [formData, setFormData] = useState<UserFormData>({
     username: '',
     email: '',
     password1: '',
     password2: '',
   });
+
+  const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -33,15 +42,17 @@ const UserForm = (props: Props) => {
         });
   
         if (!response.ok) {
+            console.log("string response", response.json().then(data => setError(data)))
           throw new Error('Network response was not ok');
         }
-  
-        return response.json();
+       
+        return response;
       } catch (error) {
         throw new Error('Error in the fetch request');
       }
     },
     onSuccess: () => {
+    
       // Code to execute on mutation success
       queryClient.invalidateQueries([`all${props.slug}s`]);
     },
@@ -61,7 +72,7 @@ const UserForm = (props: Props) => {
     } catch (error) {
       // Handle backend validation errors or network issues
       console.error('Error:', error.message);
-      // Show an appropriate error message to the user
+
     }
   };
 
@@ -75,7 +86,7 @@ const UserForm = (props: Props) => {
         <span className="close" onClick={() => props.setOpen(false)}>
           x
         </span>
-        <h1>Sign Up {props.slug}</h1>
+        <h1>{props.slug}</h1>
         <form onSubmit={handleSubmit}>
           <div className="item">
             <label>Username</label>
@@ -118,6 +129,7 @@ const UserForm = (props: Props) => {
             />
           </div>
           <button type="submit">Send</button>
+          {error && <p>{error.username}</p>}
         </form>
       </div>
     </div>
