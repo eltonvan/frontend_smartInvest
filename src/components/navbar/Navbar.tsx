@@ -1,17 +1,53 @@
 import "./navbar.scss";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LoginForm from "../loginForm/LoginForm";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; // Import QueryClientProvider
+import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
+
+
 
 const Navbar = () => {
   const [showLoginForm, setShowLoginForm] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to manage login status
+  const [username, setUsername] = useState(''); // State to store the username
+
+  useEffect(() => {
+    console.log("show login from useEffect",showLoginForm)
+  }, [showLoginForm])
 
   const openLoginForm = () => {
     setShowLoginForm(true);
+    console.log("triggered by openLoginForm", showLoginForm)
+  };
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Perform logout actions
+    
+    //document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    Cookies.remove('authToken', { path: '/' });
+    console.log("cookie", document.cookie)
+
+    setUsername('');
+    
+    navigate('/'); 
+    setShowLoginForm(false);
+    console.log("triggered by handleLogout", showLoginForm)
+
+    setIsLoggedIn(false);
+
+    
   };
 
-  // const queryClient = new QueryClient();
+  const handleLogin = (name) => {
+    // Perform login actions
+    setIsLoggedIn(true);
+    setUsername(name);
+    setShowLoginForm(false);
+    console.log("triggered by handle login", showLoginForm)
 
+  };
 
   return (
     <div className="navbar">
@@ -27,21 +63,27 @@ const Navbar = () => {
           <img src="/notifications.svg" alt="" />
           <span>1</span>
         </div>
-        {/* <QueryClientProvider client={queryClient}> */}
-        <div className="user" onClick={openLoginForm}>
-          
-            {/* // </QueryClientProvider> */}
-          
+        <div className="user" onClick={openLoginForm} >
+        
+        {isLoggedIn ? ( // Conditionally render based on login status
             <>
               <img
                 src="https://images.pexels.com/photos/11038549/pexels-photo-11038549.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load"
                 alt=""
               />
-              <span>Sign in</span>
+              
+              <span>{username}</span>
+              <button onClick={()=>{
+                handleLogout()
+
+              }}>Log out</button>
             </>
-          
+          ) : (
+            <span>Sign in</span>
+          )}
         </div>
-        {showLoginForm && <LoginForm slug="Sign In" setOpen={setShowLoginForm} />}
+        {showLoginForm && <LoginForm slug="Sign In" setOpen={setShowLoginForm} handleLogin={handleLogin} />} 
+
         <img src="/settings.svg" alt="" className="icon" />
       </div>
     </div>
