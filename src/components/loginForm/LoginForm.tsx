@@ -1,114 +1,104 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import './loginForm.scss';
-import Cookies from 'js-cookie'; // Import Cookies from 'js-cookie'
+import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
-//import { Redirect } from 'react-router-dom';
-
-
-
+import axiosInstance from '../../axiosInstance';
 
 type LoginFormData = {
-    username: string;
-    password: string;
-    //  email: string; 
-  };
+  username: string;
+  password: string;
+};
 
 type LoginFormProps = {
   slug: string;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  handleLogin: (username: string) => void; 
-
+  handleLogin: (username: string) => void;
 };
-const LoginForm: React.FC<LoginFormProps> = (props) => {
 
+const LoginForm: React.FC<LoginFormProps> = (props) => {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<LoginFormData>({
     username: '',
     password: '',
-    // email: '',
   });
-
-  const [redirectTo, setRedirectTo] = useState<string | null>(null); // State to store the redirect URL
   const navigate = useNavigate();
-
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Fetch CSRF token and set it in cookies
+    axiosInstance.get('/csrf/')
+      .then((response) => {
+        const csrfToken = response.data.csrfToken;
+        Cookies.set('csrfToken', csrfToken, { expires: 1, path: '/' });
+      })
+      .catch((error) => {
+        console.error('Error fetching CSRF token:', error);
+      });
+  }, []);
 
   const mutation = useMutation({
     mutationFn: async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/dj-rest-auth/login_the_right/`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: formData.username, 
-            password: formData.password, 
-           // email: formData.email, 
-          }),
+        const response = await axiosInstance.post('/dj-rest-auth/login_the_right/', {
+          username: formData.username,
+          password: formData.password,
         });
-   
-        const responseData = await response.json();
 
-  
-        if (!response.ok) {
-          console.log("string response", response.json().then(data => setError(data)))
-
-          throw new Error('Network response was not ok');
+        const responseData = await response.data;
+        console.log("test");
+        if (responseData.key) {
+          Cookies.set('authToken', responseData.key, { expires: 1, path: '/' });
+          props.handleLogin(formData.username);
+          navigate('/dashboard');
         }
       
 
-        if (responseData.key) {
-            // Store authentication token in a cookie using js-cookie
-            Cookies.set('authToken', responseData.key, { expires: 1, path: '/' });
-            props.handleLogin(formData.username);
-            navigate('/dashboard');
-            setFormOpen(false);
-            
-          }
-
-  
         return response;
       } catch (error) {
+        if (error.response.status === 411){
+          throw new Error('email not verified');
+        }
+
+        else{
         throw new Error('Error in the fetch request');
+        }
       }
     },
     onSuccess: () => {
-      // Code to execute on mutation success
       queryClient.invalidateQueries([`all${props.slug}s`]);
     },
   });
-  
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-        await mutation.mutateAsync();
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            console.error('Error:', error.message);
-        }
+      await mutation.mutateAsync();
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      }
     }
-};
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
-    setFormData({ ...formData, [field]: e.target.value });
-    // setRedirectTo('/dashboard');
   };
 
-  // const setFormOpen = (open: boolean) => {
-  //   props.setOpen(open);
-  // };
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    setFormData({ ...formData, [field]: e.target.value });
+  };
+
+  const setFormOpen = (open: boolean) => {
+    props.setOpen(open);
+  };
+
 
   return (
 
 
     <div className="loginForm">
       <div className="modal">
-        {/* <span className="close" onClick={() => props.setOpen(false)}>
+        <span className="close" onClick={() => props.setOpen(false)}>
           x
-        </span> */}
+        </span>
         <h1>{props.slug}</h1>
         <form onSubmit={handleSubmit}>
           <div className="item">
@@ -144,7 +134,8 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
             </div> */}
  
           <button type="submit">Send</button>
-          {error && <p>{error.username}</p>}
+          {error && <p>{error}</p>}
+
           
         </form>
       </div>

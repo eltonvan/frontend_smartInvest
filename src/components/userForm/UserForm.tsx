@@ -1,83 +1,81 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import './userForm.scss';
+import axiosInstance from '../../axiosInstance';
+import { fetchResponse } from '../../axiosInstance';
+import Cookies from 'js-cookie';
 
 type UserFormData = {
-    username: string;
-    email: string;
-    password1: string;
-    password2: string;
-  };
+  username: string;
+  email: string;
+  password1: string;
+  password2: string;
+};
 
-  type UserFormProps = {
-    slug: string;
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  };
+type UserFormProps = {
+  slug: string;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
 
-  const UserForm: React.FC<UserFormProps> = (props) => {
-    const queryClient = useQueryClient();
-    const [formData, setFormData] = useState<UserFormData>({
+const UserForm: React.FC<UserFormProps> = (props) => {
+  const queryClient = useQueryClient();
+  const [formData, setFormData] = useState<UserFormData>({
     username: '',
     email: '',
     password1: '',
     password2: '',
   });
-
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ [key: string]: string | null }>({
+    username: null,
+    email: null,
+    password1: null,
+    password2: null,
+  });
 
   const mutation = useMutation({
     mutationFn: async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/dj-rest-auth/registration/`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: formData.username,
-            email: formData.email,
-            password1: formData.password1,
-            password2: formData.password2,
-          }),
-        });
-  
-        if (!response.ok) {
-            console.log("string response", response.json().then(data => setError(data)))
-          throw new Error('Network response was not ok');
+        const response = await axiosInstance.post('/dj-rest-auth/registration/', formData);
+
+        if (response.status !== 201) {
+          const responseData = response.data;
+
+          if (responseData.username) {
+            setErrors({ ...errors, username: responseData.username[0] });
+          }
+
+          throw new Error(responseData.detail || 'Unknown error');
         }
-       
+
         return response;
       } catch (error) {
-        throw new Error('Error in the fetch request');
+        console.error('Error:', error);
+        throw new Error('Error in the fetch request', error.message);
       }
     },
     onSuccess: () => {
-    
-      // Code to execute on mutation success
       queryClient.invalidateQueries([`all${props.slug}s`]);
     },
   });
-  
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (formData.password1 !== formData.password2) {
-      // Passwords don't match, handle accordingly (frontend validation)
       return alert("Passwords don't match!");
     }
 
     try {
       await mutation.mutateAsync();
     } catch (error) {
-      // Handle backend validation errors or network issues
-      console.error('Error:', error.message);
-
+      console.error('Error:', error);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
     setFormData({ ...formData, [field]: e.target.value });
+
+    setErrors({ ...errors, [field]: null });
   };
 
   return (
@@ -88,6 +86,7 @@ type UserFormData = {
         </span>
         <h1>{props.slug}</h1>
         <form onSubmit={handleSubmit}>
+          {/* Username Input */}
           <div className="item">
             <label>Username</label>
             <input
@@ -97,7 +96,10 @@ type UserFormData = {
               onChange={(e) => handleInputChange(e, 'username')}
               required
             />
+            {errors.username && <p>{errors.username}</p>}
           </div>
+
+          {/* Email Input */}
           <div className="item">
             <label>Email</label>
             <input
@@ -107,7 +109,10 @@ type UserFormData = {
               onChange={(e) => handleInputChange(e, 'email')}
               required
             />
+            {errors.email && <p>{errors.email}</p>}
           </div>
+
+          {/* Password Input */}
           <div className="item">
             <label>Password</label>
             <input
@@ -117,7 +122,10 @@ type UserFormData = {
               onChange={(e) => handleInputChange(e, 'password1')}
               required
             />
+            {errors.password1 && <p>{errors.password1}</p>}
           </div>
+
+          {/* Confirm Password Input */}
           <div className="item">
             <label>Confirm Password</label>
             <input
@@ -127,9 +135,11 @@ type UserFormData = {
               onChange={(e) => handleInputChange(e, 'password2')}
               required
             />
+            {errors.password2 && <p>{errors.password2}</p>}
           </div>
+
+          {/* Submit Button */}
           <button type="submit">Send</button>
-          {error && <p>{error.username}</p>}
         </form>
       </div>
     </div>

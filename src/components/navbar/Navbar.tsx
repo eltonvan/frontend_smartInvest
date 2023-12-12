@@ -4,6 +4,8 @@ import LoginForm from "../loginForm/LoginForm";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; // Import QueryClientProvider
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import axiosInstance from '../../axiosInstance';
+
 
 
 
@@ -12,9 +14,7 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // State to manage login status
   const [username, setUsername] = useState(''); // State to store the username
 
-  useEffect(() => {
-    console.log("show login from useEffect",showLoginForm)
-  }, [showLoginForm])
+
 
   const openLoginForm = () => {
     setShowLoginForm(true);
@@ -25,17 +25,19 @@ const Navbar = () => {
   const handleLogout = () => {
     // Perform logout actions
     
-    //document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     Cookies.remove('authToken', { path: '/' });
     console.log("cookie", document.cookie)
 
     setUsername('');
+    console.log("username", username)
+
     
     navigate('/'); 
     setShowLoginForm(false);
     console.log("triggered by handleLogout", showLoginForm)
 
     setIsLoggedIn(false);
+    console.log("isLoggedIn", isLoggedIn)
 
     
   };
@@ -63,7 +65,7 @@ const Navbar = () => {
           <img src="/notifications.svg" alt="" />
           <span>1</span>
         </div>
-        <div className="user" onClick={openLoginForm} >
+        <div className="user" >
         
         {isLoggedIn ? ( // Conditionally render based on login status
             <>
@@ -79,7 +81,7 @@ const Navbar = () => {
               }}>Log out</button>
             </>
           ) : (
-            <span>Sign in</span>
+            <span onClick={openLoginForm}> Sign in</span>
           )}
         </div>
         {showLoginForm && <LoginForm slug="Sign In" setOpen={setShowLoginForm} handleLogin={handleLogin} />} 

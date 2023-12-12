@@ -11,7 +11,7 @@ import "./styles/global.scss";
 import User from "./pages/user/User";
 import Product from "./pages/product/Product";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import axios from "axios";
+import axiosInstance from './axiosInstance';
 
 
 
@@ -20,12 +20,7 @@ const queryClient = new QueryClient()
 
 function App() {
 
-fetch.defaults = {
-  ...fetch.defaults,
-  xsrfCookieName: 'csrftoken',
-  xsrfHeaderName: 'X-CSRFToken',
-  credentials: 'include',
-};
+
 
 
 const Layout = ({ showMenu }) => {
