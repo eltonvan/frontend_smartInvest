@@ -7,7 +7,7 @@ interface CSRFResponse {
 
 interface UpdateCSRFTokenResponse extends AxiosResponse<CSRFResponse> {}
 
-const instance: AxiosInstance = axios.create({
+export const instance: AxiosInstance = axios.create({
   baseURL: 'http://127.0.0.1:8000',
   xsrfCookieName: 'csrftoken',
   xsrfHeaderName: 'X-CSRFToken',
@@ -29,13 +29,10 @@ export const updateCSRFToken = async (): Promise<void> => {
 };
 
 export const fetchResponse = async (url:string, payload:any): Promise<void> => {
-    instance.post(url, payload)
-    .then(res => {
-        console.log(res.data);
-    })
-    .then(err => {
-        console.log(err);
-    })
+  return instance.post(url, payload) 
+    
 
 };
+
 export default instance;
+

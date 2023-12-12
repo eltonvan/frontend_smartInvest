@@ -56,6 +56,7 @@ const LoginForm: React.FC<LoginFormProps> = (props) => {
 
         return response;
       } catch (error) {
+        console.log(error);
         if (error.response.status === 411){
           throw new Error('email not verified');
         }

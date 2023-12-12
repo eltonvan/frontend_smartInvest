@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import './userForm.scss';
-import axiosInstance from '../../axiosInstance';
-import { fetchResponse } from '../../axiosInstance';
+// import axiosInstance from '../../axiosInstance';
+import { instance } from '../../axiosInstance';
+// import { fetchResponse } from '../../axiosInstance';
 import Cookies from 'js-cookie';
 
 type UserFormData = {
@@ -34,25 +35,16 @@ const UserForm: React.FC<UserFormProps> = (props) => {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      try {
-        const response = await axiosInstance.post('/dj-rest-auth/registration/', formData);
-
-        if (response.status !== 201) {
-          const responseData = response.data;
-
-          if (responseData.username) {
-            setErrors({ ...errors, username: responseData.username[0] });
-          }
-
-          throw new Error(responseData.detail || 'Unknown error');
-        }
-
-        return response;
-      } catch (error) {
-        console.error('Error:', error);
-        throw new Error('Error in the fetch request', error.message);
-      }
+     instance.post('/dj-rest-auth/registration/', formData)
+     .then((response) => {
+        console.log(response);
+    },)
+    .catch((error) => {
+        console.log(error);
+        setErrors(error.response.data);
+    });
     },
+
     onSuccess: () => {
       queryClient.invalidateQueries([`all${props.slug}s`]);
     },
